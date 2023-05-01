@@ -12,7 +12,6 @@ import org.hibernate.annotations.Immutable;
 import static ru.vasiljev.UfanetTestTask.Constants.CANCEL;
 
 @Entity
-@Immutable
 @DiscriminatorValue(CANCEL)
 @NoArgsConstructor
 @Getter

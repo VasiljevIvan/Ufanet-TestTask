@@ -31,17 +31,12 @@ public class OrderEventCreator {
 
     @Transactional
     public RegisterOrderEvent createRegisterOrderEvent(OrderEventDTO orderEventDTO) {
-        Integer orderId = orderEventDTO.getOrderId();
-        Integer employeeId = orderEventDTO.getEmployeeId();
-        Integer customerId = orderEventDTO.getCustomerId();
-        Integer productId = orderEventDTO.getProductId();
-        String cancelReason = orderEventDTO.getCancelReason();
-        if (orderId != null || employeeId == null || customerId == null || productId == null || cancelReason != null)
-            throw new RuntimeException("Неверный запрос регистрации заказа");
+        checkRequiredRegisterParams(orderEventDTO);
         LocalDateTime createdAt = LocalDateTime.now();
         Employee employee = new Employee(orderEventDTO.getEmployeeId());
         Customer customer = new Customer(orderEventDTO.getCustomerId());
-        Product product = productsRepository.findById(orderEventDTO.getProductId()).orElseThrow(RuntimeException::new);
+        Product product = productsRepository.findById(orderEventDTO.getProductId())
+                .orElseThrow(()->(new RuntimeException("Продукт с таким id не найден")));
         LocalDateTime expectedCompletionTime = calculateExpectedCompletionTime(createdAt, product);
         Order order = new Order(ordersRepository.nextOrderId());
         order.setStatus(REGISTER);
@@ -57,14 +52,10 @@ public class OrderEventCreator {
     }
 
     public CancelOrderEvent createCancelOrderEvent(OrderEventDTO orderEventDTO) {
-        Integer orderId = orderEventDTO.getOrderId();
-        Integer employeeId = orderEventDTO.getEmployeeId();
-        Integer customerId = orderEventDTO.getCustomerId();
-        Integer productId = orderEventDTO.getProductId();
+        checkRequiredParameters(orderEventDTO);
         String cancelReason = orderEventDTO.getCancelReason();
-        if (orderId == null || employeeId == null || customerId != null || productId != null || cancelReason == null)
-            throw new RuntimeException("Неверный запрос отмены заказа");
-        LocalDateTime createdAt = LocalDateTime.now();
+        if (cancelReason == null)
+            throw new RuntimeException("Не указан обязательный параметр");
         Employee employee = new Employee(orderEventDTO.getEmployeeId());
         Order order = new Order(orderEventDTO.getOrderId());
         order.setStatus(CANCEL);
@@ -73,18 +64,11 @@ public class OrderEventCreator {
                 .order(order)
                 .employee(employee)
                 .cancelReason(orderEventDTO.getCancelReason())
-                .createdAt(createdAt).build();
+                .createdAt(LocalDateTime.now()).build();
     }
 
     public TakenToWorkOrderEvent createTakenToWorkOrderEvent(OrderEventDTO orderEventDTO) {
-        Integer orderId = orderEventDTO.getOrderId();
-        Integer employeeId = orderEventDTO.getEmployeeId();
-        Integer customerId = orderEventDTO.getCustomerId();
-        Integer productId = orderEventDTO.getProductId();
-        String cancelReason = orderEventDTO.getCancelReason();
-        if (orderId == null || employeeId == null || customerId != null || productId != null || cancelReason != null)
-            throw new RuntimeException("Неверный запрос передачи в работу заказа");
-        LocalDateTime createdAt = LocalDateTime.now();
+        checkRequiredParameters(orderEventDTO);
         Employee employee = new Employee(orderEventDTO.getEmployeeId());
         Order order = new Order(orderEventDTO.getOrderId());
         order.setStatus(TAKEN_TO_WORK);
@@ -92,18 +76,11 @@ public class OrderEventCreator {
                 .eventType(TAKEN_TO_WORK)
                 .order(order)
                 .employee(employee)
-                .createdAt(createdAt).build();
+                .createdAt(LocalDateTime.now()).build();
     }
 
     public ReadyOrderEvent createReadyOrderEvent(OrderEventDTO orderEventDTO) {
-        Integer orderId = orderEventDTO.getOrderId();
-        Integer employeeId = orderEventDTO.getEmployeeId();
-        Integer customerId = orderEventDTO.getCustomerId();
-        Integer productId = orderEventDTO.getProductId();
-        String cancelReason = orderEventDTO.getCancelReason();
-        if (orderId == null || employeeId == null || customerId != null || productId != null || cancelReason != null)
-            throw new RuntimeException("Неверный запрос готовности заказа");
-        LocalDateTime createdAt = LocalDateTime.now();
+        checkRequiredParameters(orderEventDTO);
         Employee employee = new Employee(orderEventDTO.getEmployeeId());
         Order order = new Order(orderEventDTO.getOrderId());
         order.setStatus(READY);
@@ -111,18 +88,11 @@ public class OrderEventCreator {
                 .eventType(READY)
                 .order(order)
                 .employee(employee)
-                .createdAt(createdAt).build();
+                .createdAt(LocalDateTime.now()).build();
     }
 
     public IssuedOrderEvent createIssuedOrderEvent(OrderEventDTO orderEventDTO) {
-        Integer orderId = orderEventDTO.getOrderId();
-        Integer employeeId = orderEventDTO.getEmployeeId();
-        Integer customerId = orderEventDTO.getCustomerId();
-        Integer productId = orderEventDTO.getProductId();
-        String cancelReason = orderEventDTO.getCancelReason();
-        if (orderId == null || employeeId == null || customerId != null || productId != null || cancelReason != null)
-            throw new RuntimeException("Неверный запрос выдачи заказа");
-        LocalDateTime createdAt = LocalDateTime.now();
+        checkRequiredParameters(orderEventDTO);
         Employee employee = new Employee(orderEventDTO.getEmployeeId());
         Order order = new Order(orderEventDTO.getOrderId());
         order.setStatus(ISSUED);
@@ -130,7 +100,23 @@ public class OrderEventCreator {
                 .eventType(ISSUED)
                 .order(order)
                 .employee(employee)
-                .createdAt(createdAt).build();
+                .createdAt(LocalDateTime.now()).build();
+    }
+
+    private void checkRequiredParameters(OrderEventDTO orderEventDTO) {
+        Integer orderId = orderEventDTO.getOrderId();
+        Integer employeeId = orderEventDTO.getEmployeeId();
+        if (orderId == null || employeeId == null)
+            throw new RuntimeException("Не указан обязательный параметр");
+    }
+
+
+    private void checkRequiredRegisterParams(OrderEventDTO orderEventDTO) {
+        Integer employeeId = orderEventDTO.getEmployeeId();
+        Integer customerId = orderEventDTO.getCustomerId();
+        Integer productId = orderEventDTO.getProductId();
+        if (employeeId == null || customerId == null || productId == null)
+            throw new RuntimeException("Не указан обязательный параметр");
     }
 
     private LocalDateTime calculateExpectedCompletionTime(LocalDateTime createdAt, Product product) {

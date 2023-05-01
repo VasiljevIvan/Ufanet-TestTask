@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 import static ru.vasiljev.UfanetTestTask.Constants.REGISTER;
 
 @Entity
-@Immutable
 @DiscriminatorValue(REGISTER)
 @NoArgsConstructor
 @Getter

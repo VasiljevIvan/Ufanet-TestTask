@@ -1,5 +1,7 @@
 package ru.vasiljev.UfanetTestTask.models.events;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -13,7 +15,7 @@ import java.time.LocalDateTime;
 @Immutable
 @Table(name = "order_event")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "event_type")
+@DiscriminatorColumn(name = "type")
 @NoArgsConstructor
 @Getter
 @Setter
@@ -23,7 +25,6 @@ public abstract class OrderEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Transient
     private String eventType;
 
     private LocalDateTime createdAt;
@@ -32,6 +33,7 @@ public abstract class OrderEvent {
     @JoinColumn(name = "employee_id", referencedColumnName = "id")
     private Employee employee;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "order_id", referencedColumnName = "id")
     private Order order;

@@ -17,7 +17,6 @@ import java.util.Optional;
 import static ru.vasiljev.UfanetTestTask.Constants.*;
 
 @Service
-@Transactional(readOnly = true)
 public class OrderEventHandler {
     private static final Logger logger = LoggerFactory.getLogger(OrderEventHandler.class);
     private final EmployeesRepository employeesRepository;
@@ -33,7 +32,6 @@ public class OrderEventHandler {
         this.ordersRepository = ordersRepository;
     }
 
-    @Transactional
     public void handleOrderEvent(OrderEvent event) {
         checkEmployeeExists(event.getEmployee().getId());
         if (event.getEventType().equals(REGISTER)) {
@@ -45,32 +43,22 @@ public class OrderEventHandler {
                 case CANCEL -> {
                     if (!order.getStatus().equals(CANCEL) && !order.getStatus().equals(ISSUED))
                         saveOrderEventAndOrder(event);
-                    else if (order.getStatus().equals(CANCEL)) throw new RuntimeException("Заказ уже отменен");
-                    else if (order.getStatus().equals(ISSUED)) throw new RuntimeException("Заказ уже выдан");
+                    else throw new RuntimeException("Заказ уже выдан или отменен");
                 }
                 case TAKEN_TO_WORK -> {
-                    switch (order.getStatus()) {
-                        case REGISTER -> saveOrderEventAndOrder(event);
-                        case CANCEL -> throw new RuntimeException("Заказ уже отменен");
-                        case ISSUED -> throw new RuntimeException("Заказ уже выдан");
-                        default -> throw new RuntimeException("Заказ должен иметь статус \'Зарегистрирован\'");
-                    }
+                    if (order.getStatus().equals(REGISTER))
+                        saveOrderEventAndOrder(event);
+                    else throw new RuntimeException("Заказ должен иметь статус \'Зарегистрирован\'");
                 }
                 case READY -> {
-                    switch (order.getStatus()) {
-                        case TAKEN_TO_WORK -> saveOrderEventAndOrder(event);
-                        case CANCEL -> throw new RuntimeException("Заказ уже отменен");
-                        case ISSUED -> throw new RuntimeException("Заказ уже выдан");
-                        default -> throw new RuntimeException("Заказ должен иметь статус \'Взят в работу\'");
-                    }
+                    if (order.getStatus().equals(TAKEN_TO_WORK))
+                        saveOrderEventAndOrder(event);
+                    else throw new RuntimeException("Заказ должен иметь статус \'Взят в работу\'");
                 }
                 case ISSUED -> {
-                    switch (order.getStatus()) {
-                        case READY -> saveOrderEventAndOrder(event);
-                        case CANCEL -> throw new RuntimeException("Заказ уже отменен");
-                        case ISSUED -> throw new RuntimeException("Заказ уже выдан");
-                        default -> throw new RuntimeException("Заказ должен иметь статус \'Готов к выдаче\'");
-                    }
+                    if (order.getStatus().equals(READY))
+                        saveOrderEventAndOrder(event);
+                    else throw new RuntimeException("Заказ должен иметь статус \'Готов к выдаче\'");
                 }
             }
         }

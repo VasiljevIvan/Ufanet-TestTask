@@ -9,7 +9,6 @@ import org.hibernate.annotations.Immutable;
 import static ru.vasiljev.UfanetTestTask.Constants.ISSUED;
 
 @Entity
-@Immutable
 @DiscriminatorValue(ISSUED)
 @NoArgsConstructor
 @Getter

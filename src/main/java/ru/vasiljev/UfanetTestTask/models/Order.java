@@ -1,5 +1,6 @@
 package ru.vasiljev.UfanetTestTask.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,7 +23,8 @@ public class Order {
 
     private String status;
 
-    @OneToMany(mappedBy = "order")
+    @JsonManagedReference
+    @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
     private List<OrderEvent> events = new ArrayList<>();
 
     public Order(int id) {

@@ -26,39 +26,44 @@ public class OrderEventController {
         this.orderService = orderService;
     }
 
+    @PostMapping("/getorder/{id}")
+    public ResponseEntity<Order> reg(@PathVariable("id") int id) {
+        return new ResponseEntity<>(orderService.findOrder(id), HttpStatus.OK);
+    }
+
     @PostMapping("/registration")
     public ResponseEntity<Order> reg(@RequestBody OrderEventDTO orderEventDTO) {
         RegisterOrderEvent registerOrderEvent = orderEventCreator.createRegisterOrderEvent(orderEventDTO);
         orderService.publishEvent(registerOrderEvent);
-        return new ResponseEntity<>(registerOrderEvent.getOrder(), HttpStatus.OK);
+        return new ResponseEntity<>(orderService.findOrder(registerOrderEvent.getOrder().getId()), HttpStatus.OK);
     }
 
     @PostMapping("/cancel")
     public ResponseEntity<Order> ccl(@RequestBody OrderEventDTO orderEventDTO) {
         CancelOrderEvent cancelOrderEvent = orderEventCreator.createCancelOrderEvent(orderEventDTO);
         orderService.publishEvent(cancelOrderEvent);
-        return new ResponseEntity<>(cancelOrderEvent.getOrder(), HttpStatus.OK);
+        return new ResponseEntity<>(orderService.findOrder(cancelOrderEvent.getOrder().getId()), HttpStatus.OK);
     }
 
     @PostMapping("/taken_to_work")
-    public ResponseEntity<TakenToWorkOrderEvent> wrk(@RequestBody OrderEventDTO orderEventDTO) {
+    public ResponseEntity<Order> wrk(@RequestBody OrderEventDTO orderEventDTO) {
         TakenToWorkOrderEvent takenToWorkOrderEvent = orderEventCreator.createTakenToWorkOrderEvent(orderEventDTO);
         orderService.publishEvent(takenToWorkOrderEvent);
-        return new ResponseEntity<>(takenToWorkOrderEvent, HttpStatus.OK);
+        return new ResponseEntity<>(orderService.findOrder(takenToWorkOrderEvent.getOrder().getId()), HttpStatus.OK);
     }
 
     @PostMapping("/ready")
-    public ResponseEntity<ReadyOrderEvent> rdy(@RequestBody OrderEventDTO orderEventDTO) {
+    public ResponseEntity<Order> rdy(@RequestBody OrderEventDTO orderEventDTO) {
         ReadyOrderEvent readyOrderEvent = orderEventCreator.createReadyOrderEvent(orderEventDTO);
         orderService.publishEvent(readyOrderEvent);
-        return new ResponseEntity<>(readyOrderEvent, HttpStatus.OK);
+        return new ResponseEntity<>(orderService.findOrder(readyOrderEvent.getOrder().getId()), HttpStatus.OK);
     }
 
     @PostMapping("/issued")
-    public ResponseEntity<IssuedOrderEvent> iss(@RequestBody OrderEventDTO orderEventDTO) {
+    public ResponseEntity<Order> iss(@RequestBody OrderEventDTO orderEventDTO) {
         IssuedOrderEvent issuedOrderEvent = orderEventCreator.createIssuedOrderEvent(orderEventDTO);
         orderService.publishEvent(issuedOrderEvent);
-        return new ResponseEntity<>(issuedOrderEvent, HttpStatus.OK);
+        return new ResponseEntity<>(orderService.findOrder(issuedOrderEvent.getOrder().getId()), HttpStatus.OK);
     }
 
     @ExceptionHandler
