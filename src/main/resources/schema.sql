@@ -1,0 +1,1 @@
+create sequence if not exists order_id_seq;
